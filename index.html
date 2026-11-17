@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProsperMind | Inteligência Financeira Avançada</title>
+
+  <!-- LIBS EXTERNAS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Plugin Datalabels para exibir porcentagens/valores no gráfico -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #151c2c;
+      --accent-green: #10b981;
+      --accent-green-hover: #059669;
+      --accent-gold: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: #1f293d;
+      --danger: #ef4444;
+      --accent-blue: #3b82f6;
+      --purple: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background-color: var(--bg-color); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .container { width: 100%; max-width: 1100px; background-color: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.6); overflow: hidden; }
+    .hidden { display: none !important; }
+
+    /* AUTH SECTION */
+    .auth-container { max-width: 450px; margin: 40px auto; padding: 30px; }
+    .brand-header { text-align: center; margin-bottom: 25px; }
+    .brand-header i { font-size: 3rem; color: var(--accent-gold); margin-bottom: 10px; }
+    .brand-header h1 { font-size: 1.8rem; letter-spacing: 1px; }
+    .brand-header p { color: var(--text-muted); font-size: 0.9rem; }
+    .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+    .tab-btn { flex: 1; padding: 12px; background: none; border: none; color: var(--text-muted); font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .tab-btn.active { color: var(--accent-green); border-bottom: 2px solid var(--accent-green); }
+
+    /* FORMS & INPUTS */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+    .form-group input, .form-group select { width: 100%; padding: 11px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 0.95rem; outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent-green); }
+    .btn-submit { width: 100%; padding: 12px; background-color: var(--accent-green); color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+    .btn-submit:hover { background-color: var(--accent-green-hover); }
+    .btn-secondary { background-color: #374151; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-secondary:hover { background-color: #4b5563; }
+    .btn-danger { background-color: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+    .btn-danger:hover { background-color: var(--danger); color: #fff; }
+
+    /* DASHBOARD LAYOUT */
+    .dashboard-header { padding: 20px 30px; background-color: #0e1422; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .dashboard-body { padding: 30px; }
+    .btn-logout { background: none; border: 1px solid var(--danger); color: var(--danger); padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+
+    /* SUMMARY CARDS */
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .summary-card { background-color: var(--bg-color); border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; display: flex; align-items: center; gap: 15px; }
+    .summary-card i { font-size: 2rem; color: var(--accent-gold); }
+    .summary-card div span { font-size: 0.8rem; color: var(--text-muted); }
+    .summary-card div h3 { font-size: 1.2rem; color: #fff; margin-top: 2px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; transition: border-color 0.4s; }
+    .card.highlight { border-color: var(--accent-green); box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+    .card-title { font-size: 1.1rem; color: var(--accent-gold); margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* SALDO EM TEMPO REAL NO FORMULARIO */
+    .live-balance-box { background: rgba(255,255,255,0.03); border: 1px dashed var(--border-color); padding: 10px 15px; border-radius: 8px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+    .live-balance-value { font-weight: bold; font-size: 1rem; color: var(--accent-green); }
+    .live-balance-value.negative { color: var(--danger); }
+
+    /* BADGES & ADVICE */
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+    .badge-ok { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+    .badge-warn { background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); }
+    .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+    .advice-box { margin-top: 20px; padding: 18px; border-radius: 10px; background: rgba(16, 185, 129, 0.08); border-left: 4px solid var(--accent-green); }
+    .advice-box.warning { background: rgba(239, 68, 68, 0.08); border-left-color: var(--danger); }
+    .advice-box.moderate { background: rgba(245, 158, 11, 0.08); border-left-color: var(--accent-gold); }
+    .advice-title { font-size: 1rem; font-weight: bold; margin-bottom: 8px; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .advice-list { margin-top: 10px; padding-left: 20px; font-size: 0.85rem; line-height: 1.6; color: var(--text-main); }
+    .advice-list li { margin-bottom: 6px; }
+
+    .hours-box { margin-top: 15px; padding: 12px; background: rgba(139, 92, 246, 0.1); border-left: 4px solid var(--purple); font-size: 0.85rem; border-radius: 6px; }
+
+    /* HISTORY TABLE */
+    .history-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+    .history-table th, .history-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .history-table th { color: var(--text-muted); }
+    .actions-cell { display: flex; gap: 6px; }
+
+    /* MODAL COMPARADOR */
+    .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: var(--card-bg); border: 1px solid var(--border-color); padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+    .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .comp-box { background: var(--bg-color); padding: 12px; border-radius: 8px; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- AUTH SCREEN -->
+  <div id="authScreen" class="auth-container">
+    <div class="brand-header">
+      <i class="fa-solid fa-coins"></i>
+      <h1>ProsperMind</h1>
+      <p>Sua vida financeira sob controle inteligente</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button id="tabLoginBtn" class="tab-btn active" onclick="switchTab('login')">Entrar</button>
+      <button id="tabRegisterBtn" class="tab-btn" onclick="switchTab('register')">Cadastrar</button>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>CPF</label>
+        <input type="text" id="loginCpf" placeholder="000.000.000-00" oninput="maskCPF(this)" maxlength="14" required>
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="loginPassword" placeholder="******" required>
+      </div>
+      <button type="submit" class="btn-submit">Acessar Conta</button>
+    </form>
+
+    <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label>Nome Completo</label>
+        <input type="text" id="regName" placeholder="Seu nome" required>
+      </div>
+      <div class="form-group">
+        <label>CPF</label>
+        <input type="text" id="regCpf" placeholder="000.000.000-00" oninput="maskCPF(this)" maxlength="14" required>
+      </div>
+      <div class="form-group">
+        <label>Celular</label>
+        <input type="tel" id="regPhone" placeholder="(00) 00000-0000" oninput="maskPhone(this)" maxlength="15" required>
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="regPassword" placeholder="******" required>
+      </div>
+      <div class="form-group">
+        <label>Confirmar Senha</label>
+        <input type="password" id="regConfirmPassword" placeholder="******" required>
+      </div>
+      <button type="submit" class="btn-submit">Criar Conta</button>
+    </form>
+  </div>
+
+  <!-- DASHBOARD SCREEN -->
+  <div id="dashboardScreen" class="hidden">
+    <div class="dashboard-header">
+      <div>
+        <h2>Olá, <span id="userNameDisplay">Usuário</span></h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Painel de Inteligência Financeira</p>
+      </div>
+      <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+    </div>
+
+    <div class="dashboard-body">
+
+      <!-- SUMMARY CARDS -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <i class="fa-solid fa-piggy-bank" style="color: var(--accent-green);"></i>
+          <div>
+            <span>Total Economizado</span>
+            <h3 id="cardTotalSavings">R$ 0,00</h3>
+          </div>
+        </div>
+        <div class="summary-card">
+          <i class="fa-solid fa-calculator" style="color: var(--accent-blue);"></i>
+          <div>
+            <span>Média de Gastos</span>
+            <h3 id="cardAvgExpenses">R$ 0,00</h3>
+          </div>
+        </div>
+        <div class="summary-card">
+          <i class="fa-solid fa-trophy" style="color: var(--accent-gold);"></i>
+          <div>
+            <span>Melhor Mês</span>
+            <h3 id="cardBestMonth">--</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+
+        <!-- FORMULARIO DE LANCAMENTO -->
+        <div class="card" id="formCard">
+          <div class="card-title">
+            <span><i class="fa-solid fa-pen-to-square"></i> Lançamento Mensal</span>
+            <button type="button" class="btn-secondary" onclick="resetForm()"><i class="fa-solid fa-rotate-right"></i> Limpar</button>
+          </div>
+          <form onsubmit="handleFinancialSubmit(event)">
+            <div class="form-group">
+              <label>Mês de Referência</label>
+              <input type="month" id="finMonth" required>
+            </div>
+            <div class="form-group">
+              <label>Renda Total Líquida (R$)</label>
+              <input type="text" id="finIncome" placeholder="R$ 0,00" oninput="maskCurrency(this); calculateLiveBalance();" required>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Compras do mês (alimentação, higiene pessoal, limpeza, etc.)</label>
+                <input type="text" id="expFood" value="R$ 0,00" oninput="maskCurrency(this); calculateLiveBalance();">
+              </div>
+              <div class="form-group">
+                <label>Saúde</label>
+                <input type="text" id="expHealth" value="R$ 0,00" oninput="maskCurrency(this); calculateLiveBalance();">
+              </div>
+              <div class="form-group">
+                <label>Despesas de consumo (internet, energia, água, gás, aluguel, etc.)</label>
+                <input type="text" id="expEssential" value="R$ 0,00" oninput="maskCurrency(this); calculateLiveBalance();">
+              </div>
+              <div class="form-group">
+                <label>Lazer (festas, bebida, fast-foods, saídas, etc.)</label>
+                <input type="text" id="expLeisure" value="R$ 0,00" oninput="maskCurrency(this); calculateLiveBalance();">
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Cartão de Crédito / Empréstimos</label>
+                <input type="text" id="expCredit" value="R$ 0,00" oninput="maskCurrency(this); calculateLiveBalance();">
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Outros gastos (roupa, calçado, etc.)</label>
+                <input type="text" id="expOthers" value="R$ 0,00" oninput="maskCurrency(this); calculateLiveBalance();">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Guardado para Emergência/Investimentos</label>
+              <input type="text" id="finSavings" value="R$ 0,00" oninput="maskCurrency(this); calculateLiveBalance();">
+            </div>
+
+            <div class="live-balance-box">
+              <span>Saldo do Mês (Livre):</span>
+              <span id="liveBalanceVal" class="live-balance-value">R$ 0,00</span>
+            </div>
+
+            <button type="submit" class="btn-submit">Salvar e Analisar Mês</button>
+          </form>
+        </div>
+
+        <!-- DIAGNOSTICO E GRAFICO ROSCA (DOUGHNUT) -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fa-solid fa-chart-pie"></i> Diagnóstico: <span id="displaySelectedMonth" style="color:#fff; margin-left: 5px;">--</span>
+          </div>
+
+          <div style="position: relative; width: 100%; height: 260px; margin: 0 auto;">
+            <canvas id="expensesChart"></canvas>
+          </div>
+
+          <div id="hoursLifeBox" class="hours-box hidden">
+            <i class="fa-solid fa-hourglass-half" style="color: var(--purple);"></i> <strong>Calculadora Horas de Vida:</strong>
+            <p id="hoursLifeText" style="margin-top: 4px;"></p>
+          </div>
+
+          <div id="adviceContainer" class="advice-box hidden">
+            <div class="advice-title" id="adviceStatus">
+              <i class="fa-solid fa-lightbulb"></i> Diagnóstico Inteligente Avançado
+            </div>
+            <div id="adviceText"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- HISTÓRICO DE DESEMPENHO -->
+      <div class="card" style="margin-top: 25px;">
+        <div class="card-title">
+          <span><i class="fa-solid fa-calendar-days"></i> Histórico Anual de Desempenho</span>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <select id="historyYearFilter" style="padding: 6px; font-size: 0.85rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 6px;" onchange="renderHistoryTable()">
+              <option value="ALL">Todos os Anos</option>
+            </select>
+            <button class="btn-secondary" onclick="exportToCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+            <button class="btn-secondary" onclick="openCompareModal()"><i class="fa-solid fa-code-compare"></i> Comparar Meses</button>
+          </div>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Renda</th>
+                <th>Despesas</th>
+                <th>Economias</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMPARADOR -->
+<div id="compareModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="card-title">
+      <span><i class="fa-solid fa-code-compare"></i> Comparar Dois Meses</span>
+      <button class="btn-secondary" onclick="closeCompareModal()">Fechar</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Mês A</label>
+        <select id="compMonthA" onchange="runComparison()"></select>
+      </div>
+      <div class="form-group">
+        <label>Mês B</label>
+        <select id="compMonthB" onchange="runComparison()"></select>
+      </div>
+    </div>
+    <div id="compResult" class="comp-grid hidden">
+      <div class="comp-box" id="compBoxA"></div>
+      <div class="comp-box" id="compBoxB"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentUser = null;
+  let chartInstance = null;
+
+  // Registrar Plugin de DataLabels do Chart.js
+  Chart.register(ChartDataLabels);
+
+  // Plugin Customizado para desenhar Texto/Total no Centro da Rosca
+  const pluginTextoCentro = {
+    id: 'textoCentro',
+    beforeDraw(chart) {
+      const { ctx, chartArea: { top, bottom, left, right } } = chart;
+      ctx.save();
+
+      const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+      const centerX = (left + right) / 2;
+      const centerY = (top + bottom) / 2;
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      ctx.font = '600 12px sans-serif';
+      ctx.fillStyle = '#9ca3af';
+      ctx.fillText('Total Gastos', centerX, centerY - 10);
+
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(formatMoney(total), centerX, centerY + 10);
+
+      ctx.restore();
+    }
+  };
+
+  // UTILITÁRIOS E MÁSCARAS
+  function parseCurrency(str) {
+    if (!str) return 0;
+    if (typeof str === 'number') return str;
+    const clean = str.replace(/[^\d,]/g, '').replace(',', '.');
+    return parseFloat(clean) || 0;
+  }
+
+  function formatMoney(num) {
+    return (num || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function maskCurrency(input) {
+    let value = input.value.replace(/\D/g, '');
+    value = (value / 100).toFixed(2) + '';
+    value = value.replace(".", ",");
+    value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+    input.value = "R$ " + value;
+  }
+
+  function maskCPF(i) {
+    let v = i.value.replace(/\D/g, "");
+    v = v.replace(/(\d{3})(\d)/, "$1.$2");
+    v = v.replace(/(\d{3})(\d)/, "$1.$2");
+    v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    i.value = v;
+  }
+
+  function maskPhone(i) {
+    let v = i.value.replace(/\D/g, "");
+    v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+    v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+    i.value = v;
+  }
+
+  function setMonthToCurrent() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    document.getElementById('finMonth').value = `${year}-${month}`;
+  }
+
+  // CÁLCULO DE SALDO EM TEMPO REAL NO FORMULÁRIO
+  function calculateLiveBalance() {
+    const income = parseCurrency(document.getElementById('finIncome').value);
+    const food = parseCurrency(document.getElementById('expFood').value);
+    const health = parseCurrency(document.getElementById('expHealth').value);
+    const essential = parseCurrency(document.getElementById('expEssential').value);
+    const leisure = parseCurrency(document.getElementById('expLeisure').value);
+    const credit = parseCurrency(document.getElementById('expCredit').value);
+    const others = parseCurrency(document.getElementById('expOthers').value);
+    const savings = parseCurrency(document.getElementById('finSavings').value);
+
+    const totalExpenses = food + health + essential + leisure + credit + others;
+    const balance = income - (totalExpenses + savings);
+
+    const el = document.getElementById('liveBalanceVal');
+    el.innerText = formatMoney(balance);
+    if (balance < 0) {
+      el.classList.add('negative');
+    } else {
+      el.classList.remove('negative');
+    }
+  }
+
+  // INICIAÇÃO & SESSÃO
+  window.addEventListener('DOMContentLoaded', () => {
+    const activeCpf = localStorage.getItem('prosper_active_user');
+    if (activeCpf) {
+      const users = JSON.parse(localStorage.getItem('prosper_users') || '{}');
+      if (users[activeCpf]) {
+        currentUser = users[activeCpf];
+        loadDashboard();
+      }
+    }
+  });
+
+  function switchTab(tab) {
+    document.getElementById('tabLoginBtn').classList.toggle('active', tab === 'login');
+    document.getElementById('tabRegisterBtn').classList.toggle('active', tab === 'register');
+    document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+  }
+
+  function handleRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('regName').value;
+    const cpf = document.getElementById('regCpf').value;
+    const phone = document.getElementById('regPhone').value;
+    const password = document.getElementById('regPassword').value;
+
+    if (password !== document.getElementById('regConfirmPassword').value) {
+      alert("As senhas não coincidem!"); return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('prosper_users') || '{}');
+    if (users[cpf]) { alert("CPF já cadastrado!"); return; }
+
+    users[cpf] = { name, cpf, phone, password, financialData: [] };
+    localStorage.setItem('prosper_users', JSON.stringify(users));
+    alert("Conta criada com sucesso!");
+    switchTab('login');
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const cpf = document.getElementById('loginCpf').value;
+    const password = document.getElementById('loginPassword').value;
+    const users = JSON.parse(localStorage.getItem('prosper_users') || '{}');
+
+    if (users[cpf] && users[cpf].password === password) {
+      currentUser = users[cpf];
+      localStorage.setItem('prosper_active_user', cpf);
+      loadDashboard();
+    } else {
+      alert("CPF ou senha inválidos.");
+    }
+  }
+
+  function logout() {
+    currentUser = null;
+    localStorage.removeItem('prosper_active_user');
+    document.getElementById('dashboardScreen').classList.add('hidden');
+    document.getElementById('authScreen').classList.remove('hidden');
+  }
+
+  function resetForm() {
+    setMonthToCurrent();
+    document.getElementById('finIncome').value = "R$ 0,00";
+    document.getElementById('expFood').value = "R$ 0,00";
+    document.getElementById('expHealth').value = "R$ 0,00";
+    document.getElementById('expEssential').value = "R$ 0,00";
+    document.getElementById('expLeisure').value = "R$ 0,00";
+    document.getElementById('expCredit').value = "R$ 0,00";
+    document.getElementById('expOthers').value = "R$ 0,00";
+    document.getElementById('finSavings').value = "R$ 0,00";
+    calculateLiveBalance();
+  }
+
+  // INICIALIZADOR DO GRÁFICO DOUGHNUT
+  function initChart() {
+    const ctx = document.getElementById('expensesChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: [
+          'Compras do mês (alimentação, higiene pessoal, limpeza, etc.)',
+          'Saúde',
+          'Despesas de consumo (internet, energia, água, gás, aluguel, etc.)',
+          'Lazer (festas, bebida, fast-foods, saídas, etc.)',
+          'Cartão/Emp.',
+          'Outros gastos (roupa, calçado, etc.)'
+        ],
+        datasets: [{
+          data: [0, 0, 0, 0, 0, 0],
+          backgroundColor: [
+            '#ef4444',
+            '#10b981',
+            '#3b82f6',
+            '#f59e0b',
+            '#8b5cf6',
+            '#6b7280'
+          ],
+          borderColor: '#151c2c',
+          borderWidth: 2,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#9ca3af',
+              font: { size: 11 },
+              padding: 10
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                return ` ${ctx.label}: ${formatMoney(ctx.raw)}`;
+              }
+            }
+          },
+          datalabels: {
+            color: '#ffffff',
+            font: { weight: 'bold', size: 10 },
+            formatter: (val, ctx) => {
+              const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+              if (total === 0 || val === 0) return '';
+              return ((val / total) * 100).toFixed(0) + '%';
+            }
+          }
+        }
+      },
+      plugins: [pluginTextoCentro]
+    });
+  }
+
+  // DASHBOARD
+  function loadDashboard() {
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('dashboardScreen').classList.remove('hidden');
+    document.getElementById('userNameDisplay').innerText = currentUser.name;
+
+    resetForm();
+    initChart();
+    updateYearFilterOptions();
+    updateDashboardData();
+
+    if (currentUser.financialData && currentUser.financialData.length > 0) {
+      inspectMonth(currentUser.financialData[currentUser.financialData.length - 1].month, false);
+    }
+  }
+
+  function handleFinancialSubmit(e) {
+    e.preventDefault();
+
+    const month = document.getElementById('finMonth').value;
+    const income = parseCurrency(document.getElementById('finIncome').value);
+    const food = parseCurrency(document.getElementById('expFood').value);
+    const health = parseCurrency(document.getElementById('expHealth').value);
+    const essential = parseCurrency(document.getElementById('expEssential').value);
+    const leisure = parseCurrency(document.getElementById('expLeisure').value);
+    const credit = parseCurrency(document.getElementById('expCredit').value);
+    const others = parseCurrency(document.getElementById('expOthers').value);
+    const savings = parseCurrency(document.getElementById('finSavings').value);
+
+    const totalExpenses = food + health + essential + leisure + credit + others;
+    const balance = income - (totalExpenses + savings);
+
+    const record = { month, income, food, health, essential, leisure, credit, others, totalExpenses, savings, balance };
+
+    const users = JSON.parse(localStorage.getItem('prosper_users') || '{}');
+    currentUser.financialData = currentUser.financialData.filter(d => d.month !== month);
+    currentUser.financialData.push(record);
+    currentUser.financialData.sort((a,b) => a.month.localeCompare(b.month));
+
+    users[currentUser.cpf] = currentUser;
+    localStorage.setItem('prosper_users', JSON.stringify(users));
+
+    updateYearFilterOptions();
+    updateDashboardData();
+    inspectMonth(month, false);
+    alert("Lançamento salvo com sucesso!");
+  }
+
+  function deleteMonth(monthYear) {
+    if (!confirm(`Deseja realmente excluir os dados do mês ${monthYear}?`)) return;
+
+    currentUser.financialData = currentUser.financialData.filter(d => d.month !== monthYear);
+    const users = JSON.parse(localStorage.getItem('prosper_users') || '{}');
+    users[currentUser.cpf] = currentUser;
+    localStorage.setItem('prosper_users', JSON.stringify(users));
+
+    updateYearFilterOptions();
+    updateDashboardData();
+    resetForm();
+  }
+
+  function updateDashboardData() {
+    renderHistoryTable();
+    calculateSummaryCards();
+  }
+
+  function updateYearFilterOptions() {
+    const sel = document.getElementById('historyYearFilter');
+    const currentVal = sel.value;
+    sel.innerHTML = `<option value="ALL">Todos os Anos</option>`;
+
+    if (!currentUser.financialData) return;
+
+    const years = [...new Set(currentUser.financialData.map(d => d.month.split('-')[0]))].sort().reverse();
+    years.forEach(y => {
+      sel.innerHTML += `<option value="${y}">${y}</option>`;
+    });
+
+    if (years.includes(currentVal)) sel.value = currentVal;
+  }
+
+  function calculateSummaryCards() {
+    const data = currentUser.financialData;
+    if (!data || data.length === 0) {
+      document.getElementById('cardTotalSavings').innerText = "R$ 0,00";
+      document.getElementById('cardAvgExpenses').innerText = "R$ 0,00";
+      document.getElementById('cardBestMonth').innerText = "--";
+      return;
+    }
+
+    const totalSavings = data.reduce((acc, curr) => acc + curr.savings, 0);
+    const totalExpenses = data.reduce((acc, curr) => acc + curr.totalExpenses, 0);
+    const avgExpenses = totalExpenses / data.length;
+
+    let best = data[0];
+    data.forEach(d => { if (d.savings > best.savings) best = d; });
+
+    document.getElementById('cardTotalSavings').innerText = formatMoney(totalSavings);
+    document.getElementById('cardAvgExpenses').innerText = formatMoney(avgExpenses);
+    document.getElementById('cardBestMonth').innerText = `${best.month} (${formatMoney(best.savings)})`;
+  }
+
+  // EDITAR / INSPECIONAR MÊS COM ANÁLISE DETALHADA E CONSELHOS PERSONALIZADOS
+  function inspectMonth(monthYear, shouldScroll = true) {
+    const record = currentUser.financialData.find(d => d.month === monthYear);
+    if (!record) return;
+
+    document.getElementById('finMonth').value = record.month;
+    document.getElementById('finIncome').value = formatMoney(record.income);
+    document.getElementById('expFood').value = formatMoney(record.food);
+    document.getElementById('expHealth').value = formatMoney(record.health);
+    document.getElementById('expEssential').value = formatMoney(record.essential);
+    document.getElementById('expLeisure').value = formatMoney(record.leisure);
+    document.getElementById('expCredit').value = formatMoney(record.credit);
+    document.getElementById('expOthers').value = formatMoney(record.others);
+    document.getElementById('finSavings').value = formatMoney(record.savings);
+    calculateLiveBalance();
+
+    document.getElementById('displaySelectedMonth').innerText = record.month;
+
+    // Atualiza dados no Gráfico de Rosca
+    if (chartInstance) {
+      chartInstance.data.datasets[0].data = [
+        record.food,
+        record.health,
+        record.essential,
+        record.leisure,
+        record.credit,
+        record.others
+      ];
+      chartInstance.update();
+    }
+
+    // Calculadora Horas de Vida
+    const hoursBox = document.getElementById('hoursLifeBox');
+    const hoursText = document.getElementById('hoursLifeText');
+    if (record.income > 0) {
+      const hourlyRate = record.income / 160; // Base de 160h mensais
+      const hoursSpent = record.totalExpenses / hourlyRate;
+      hoursText.innerHTML = `Para cobrir os gastos deste mês (<strong>${formatMoney(record.totalExpenses)}</strong>), você trabalhou aproximadamente <strong>${hoursSpent.toFixed(1)} horas</strong> de sua vida.`;
+      hoursBox.classList.remove('hidden');
+    } else {
+      hoursBox.classList.add('hidden');
+    }
+
+    // --- ANÁLISE DETALHADA E CONSELHOS INTELIGENTES ---
+    const adviceBox = document.getElementById('adviceContainer');
+    const adviceText = document.getElementById('adviceText');
+    const adviceStatus = document.getElementById('adviceStatus');
+
+    adviceBox.classList.remove('hidden', 'warning', 'moderate');
+
+    const income = record.income || 0.0001; // Evita divisão por zero
+    const savingsRatio = (record.savings / income) * 100;
+    const essentialRatio = ((record.food + record.health + record.essential) / income) * 100;
+    const creditRatio = (record.credit / income) * 100;
+    const leisureRatio = (record.leisure / income) * 100;
+
+    // Identifica o maior vilão do mês
+    const categories = [
+      { name: 'Compras do mês (alimentação, higiene pessoal, limpeza, etc.)', val: record.food },
+      { name: 'Saúde', val: record.health },
+      { name: 'Despesas de consumo (internet, energia, água, gás, aluguel, etc.)', val: record.essential },
+      { name: 'Lazer (festas, bebida, fast-foods, saídas, etc.)', val: record.leisure },
+      { name: 'Cartão/Empréstimos', val: record.credit },
+      { name: 'Outros gastos (roupa, calçado, etc.)', val: record.others }
+    ];
+    categories.sort((a, b) => b.val - a.val);
+    const topExpense = categories[0];
+
+    let tipsHTML = '<ul class="advice-list">';
+
+    // 1. Diagnóstico de Status Geral
+    if (record.balance < 0) {
+      adviceBox.classList.add('warning');
+      adviceStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i> Diagnóstico: Situação Crítica (Déficit)';
+      tipsHTML += `<li><strong>Atenção Imediata:</strong> Suas despesas totais ultrapassaram sua renda em <strong>${formatMoney(Math.abs(record.balance))}</strong>. É crucial reavaliar o orçamento antes de recorrer a juros.</li>`;
+    } else if (savingsRatio >= 20) {
+      adviceStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--accent-green)"></i> Diagnóstico: Situação Excelente (Saudável)';
+      tipsHTML += `<li><strong>Manter o Foco:</strong> Parabéns! Você poupou <strong>${savingsRatio.toFixed(1)}%</strong> da renda neste mês, superando a meta ideal recomendada de 20%.</li>`;
+    } else {
+      adviceBox.classList.add('moderate');
+      adviceStatus.innerHTML = '<i class="fa-solid fa-circle-info" style="color:var(--accent-gold)"></i> Diagnóstico: Situação Regular (Atenção)';
+      tipsHTML += `<li><strong>Oportunidade de Ajuste:</strong> Suas finanças estão equilibradas, mas você guardou apenas <strong>${savingsRatio.toFixed(1)}%</strong> da renda. Tente buscar a meta de 20%.</li>`;
+    }
+
+    // 2. Análise Estrutural por Categorias (Dicas de Custo)
+    if (topExpense.val > 0) {
+      const topPct = ((topExpense.val / income) * 100).toFixed(1);
+      tipsHTML += `<li><strong>Maior Gasto do Mês:</strong> <u>${topExpense.name}</u> consumiu <strong>${formatMoney(topExpense.val)}</strong> (${topPct}% da sua renda total).</li>`;
+    }
+
+    if (creditRatio > 25) {
+      tipsHTML += `<li><strong>Alerta de Cartão/Dívidas:</strong> O cartão/empréstimos comprometeu <strong>${creditRatio.toFixed(1)}%</strong> da sua renda. O limite seguro recomendado é de no máximo 20%. Evite novas parcelas.</li>`;
+    }
+
+    if (essentialRatio > 60) {
+      tipsHTML += `<li><strong>Custo Fixo Elevado:</strong> Seus gastos essenciais somaram <strong>${essentialRatio.toFixed(1)}%</strong>. Tente renegociar contratos de internet, plano de celular e economizar na conta de luz/água.</li>`;
+    }
+
+    if (leisureRatio > 20) {
+      tipsHTML += `<li><strong>Corte Recomendado em Lazer:</strong> Gastos com lazer/estilo de vida consumiram <strong>${leisureRatio.toFixed(1)}%</strong> do seu dinheiro. Defina um teto máximo para saídas e delivery.</li>`;
+    } else if (leisureRatio > 0 && leisureRatio <= 15) {
+      tipsHTML += `<li><strong>O que manter:</strong> Você manteve o orçamento de lazer sob controle (${leisureRatio.toFixed(1)}%), permitindo-se momentos de descanso sem comprometer o futuro.</li>`;
+    }
+
+    // 3. Recomendação Estratégica
+    if (record.savings === 0) {
+      tipsHTML += `<li><strong>Dica de Ouro:</strong> Crie o hábito de se "pagar primeiro". No dia em que receber seu salário, transfira ao menos 10% diretamente para sua reserva antes de pagar as contas.</li>`;
+    } else {
+      tipsHTML += `<li><strong>Dica de Ouro:</strong> Mantenha a disciplina nos aportes. Se este dinheiro for para a Reserva de Emergência, garanta que esteja em uma aplicação com liquidez diária e rendimento seguro.</li>`;
+    }
+
+    tipsHTML += '</ul>';
+    adviceText.innerHTML = tipsHTML;
+
+    if (shouldScroll) {
+      document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  function renderHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    tbody.innerHTML = '';
+
+    if (!currentUser.financialData || currentUser.financialData.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">Nenhum lançamento registrado.</td></tr>`;
+      return;
+    }
+
+    const yearFilter = document.getElementById('historyYearFilter').value;
+    const filtered = currentUser.financialData.filter(d => yearFilter === 'ALL' || d.month.startsWith(yearFilter));
+
+    filtered.forEach(d => {
+      let badgeClass = 'badge-ok';
+      let statusText = 'EQUILIBRADO';
+
+      if (d.balance < 0) {
+        badgeClass = 'badge-danger';
+        statusText = 'RUIM';
+      } else if (d.savings > 0) {
+        badgeClass = 'badge-ok';
+        statusText = 'BOM';
+      } else {
+        badgeClass = 'badge-warn';
+        statusText = 'EQUILIBRADO';
+      }
+
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${d.month}</strong></td>
+          <td>${formatMoney(d.income)}</td>
+          <td>${formatMoney(d.totalExpenses)}</td>
+          <td>${formatMoney(d.savings)}</td>
+          <td><span class="badge ${badgeClass}">${statusText}</span></td>
+          <td class="actions-cell">
+            <button class="btn-secondary" onclick="inspectMonth('${d.month}')" title="Editar / Ver Diagnóstico"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-danger" onclick="deleteMonth('${d.month}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  function exportToCSV() {
+    if (!currentUser.financialData || currentUser.financialData.length === 0) {
+      alert("Sem dados para exportar."); return;
+    }
+
+    let csv = "Mes,Renda,Alimentacao,Saude,Essenciais,Lazer,Cartao,Outros,TotalDespesas,Economias,Saldo\n";
+    currentUser.financialData.forEach(d => {
+      csv += `${d.month},${d.income},${d.food},${d.health},${d.essential},${d.leisure},${d.credit},${d.others},${d.totalExpenses},${d.savings},${d.balance}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `ProsperMind_${currentUser.cpf}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // MODAL COMPARADOR
+  function openCompareModal() {
+    if (!currentUser.financialData || currentUser.financialData.length < 2) {
+      alert("É necessário ter pelo menos 2 meses cadastrados para comparar.");
+      return;
+    }
+
+    const selA = document.getElementById('compMonthA');
+    const selB = document.getElementById('compMonthB');
+    selA.innerHTML = ''; selB.innerHTML = '';
+
+    currentUser.financialData.forEach(d => {
+      selA.innerHTML += `<option value="${d.month}">${d.month}</option>`;
+      selB.innerHTML += `<option value="${d.month}">${d.month}</option>`;
+    });
+
+    selB.selectedIndex = currentUser.financialData.length - 1;
+
+    document.getElementById('compareModal').classList.remove('hidden');
+    runComparison();
+  }
+
+  function closeCompareModal() {
+    document.getElementById('compareModal').classList.add('hidden');
+  }
+
+  function runComparison() {
+    const mA = document.getElementById('compMonthA').value;
+    const mB = document.getElementById('compMonthB').value;
+
+    const dA = currentUser.financialData.find(d => d.month === mA);
+    const dB = currentUser.financialData.find(d => d.month === mB);
+
+    if (!dA || !dB) return;
+
+    const boxA = document.getElementById('compBoxA');
+    const boxB = document.getElementById('compBoxB');
+
+    boxA.innerHTML = `
+      <h4 style="color: var(--accent-gold);">${dA.month}</h4>
+      <p style="margin-top:5px;">Renda: <strong>${formatMoney(dA.income)}</strong></p>
+      <p>Despesas: <strong>${formatMoney(dA.totalExpenses)}</strong></p>
+      <p>Economias: <strong>${formatMoney(dA.savings)}</strong></p>
+    `;
+
+    const expDiff = dB.totalExpenses - dA.totalExpenses;
+    const diffColor = expDiff <= 0 ? 'var(--accent-green)' : 'var(--danger)';
+
+    boxB.innerHTML = `
+      <h4 style="color: var(--accent-gold);">${dB.month}</h4>
+      <p style="margin-top:5px;">Renda: <strong>${formatMoney(dB.income)}</strong></p>
+      <p>Despesas: <strong>${formatMoney(dB.totalExpenses)}</strong></p>
+      <p>Economias: <strong>${formatMoney(dB.savings)}</strong></p>
+      <hr style="border-color: var(--border-color); margin: 8px 0;">
+      <p style="font-size: 0.8rem;">Diferença Despesas: <strong style="color: ${diffColor};">${expDiff > 0 ? '+' : ''}${formatMoney(expDiff)}</strong></p>
+    `;
+
+    document.getElementById('compResult').classList.remove('hidden');
+  }
+</script>
+</body>
+</html>
